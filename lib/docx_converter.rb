@@ -15,8 +15,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+require 'publishr'
 require 'kramdown'
 require 'nokogiri'
+require 'zip/zipfilesystem'
 
 dir = File.dirname(__FILE__)
 Dir[File.expand_path("#{dir}/docx_converter/*.rb")].uniq.each do |file|

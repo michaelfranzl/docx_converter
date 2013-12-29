@@ -22,6 +22,7 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'docx_converter'
 
 if ARGV[2].nil?
+  puts 'Error: Arguments missing!'
   puts ''
   puts 'docx_converter  -- '
   puts 'Converts docx files into html or LaTeX via the kramdown syntax'
@@ -39,14 +40,21 @@ if ARGV[2].nil?
   Process.exit
 end
 
-docx_file = ARGV[1]
-output_format = ARGV[2]
+docx_file = ARGV[0]
+output_format = ARGV[1]
+output_dir = ARGV[2]
 
-output_kramdown = DocxConverter::Parser.new(docx_file).parse
+parse_options = {
+  :image_subdir_filesystem => "images",
+  :image_subdir_kramdown => ""
+}
+
+output_kramdown = DocxConverter::Parser.new(docx_file, output_dir, parse_options).parse
+
 
 case output_format
   when 'kramdown'
-    puts output_kramdown
+    File.write(File.join(output_dir, "01.chapter01.en.page"), output_kramdown)
   when 'html'
     puts 'html'
   when 'latex'
