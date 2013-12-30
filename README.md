@@ -18,11 +18,12 @@ Supported Word elements:
 * Page break
 * Bold
 * Italic
-* paragraph styles like Heading1, Heading2 and Title
-* character styles like Strong and Quote
-* footnotes
-* images including captions
-* non-breaking spaces
+* Paragraph styles "Heading1", "Heading2" and "Title"
+* Character styles "Strong" and "Quote"
+* Footnotes
+* Tables
+* Images including captions
+* Non-breaking spaces
 
 Installation
 ----------
