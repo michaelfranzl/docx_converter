@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-# docx_converter -- Converts docx files into html or LaTeX via the kramdown syntax
+# docx_converter -- Converts Word docx files into html or LaTeX via the kramdown syntax
 # Copyright (C) 2013 Red (E) Tools Ltd. (www.thebigrede.net)
 # 
 # This program is free software: you can redistribute it and/or modify
@@ -19,22 +19,16 @@
 
 module DocxConverter
   class Parser
-    def initialize(docx_filepath, output_dir, options)
-      @output_dir = output_dir
-      @docx_filepath = docx_filepath
+    def initialize(options)
+      @output_dir = options[:output_dir]
+      @docx_filepath = options[:inputfile]
       
       @image_subdir_filesystem = options[:image_subdir_filesystem]
       @image_subdir_kramdown = options[:image_subdir_kramdown]
-      FileUtils.mkdir_p(File.join(@output_dir, @image_subdir_filesystem))
       
-      @footnotes_hash = {}
       @relationships_hash = {}
       
-      @image_extract_dir = File.dirname(docx_filepath)
-      
       @zipfile = Zip::ZipFile.new(@docx_filepath)
-      
-      docx = nil
     end
     
     def parse
@@ -47,25 +41,20 @@ module DocxConverter
       relationships = Nokogiri::XML(relationships_xml)
       
       @relationships_hash = parse_relationships(relationships)
-      
-      puts "Relationships are"
-      puts @relationships_hash.inspect
 
-      @footnotes_hash = parse_footnotes(footnotes)
-      puts "Footnotes are:"
-      puts @footnotes_hash.inspect
-
-      debugger
-      output = parse_content(content.elements.first,0)
-      output += compose_footnote_definitions
+      footnote_definitions = parse_footnotes(footnotes)
+      output_content = parse_content(content.elements.first,0)
       
-      return output
+      return {
+        :content => output_content,
+        :footnote_definitions => footnote_definitions
+      }
     end
     
     private
     
-    def unzip_read(path)
-      file = @zipfile.find_entry(path)
+    def unzip_read(zip_path)
+      file = @zipfile.find_entry(zip_path)
       contents = ""
       file.get_input_stream do |f|
         contents = f.read
@@ -73,12 +62,31 @@ module DocxConverter
       return contents
     end
     
-    def unzip_extract(zip_path, extract_filepath)
-      extract_filepath_full = File.join(@output_dir, extract_filepath)
-      file = @zipfile.find_entry(zip_path)
-      FileUtils.rm_f(extract_filepath_full)
-      ret = file.extract(extract_filepath_full)
-      return ret
+    # this is only needed for embedded images
+    def extract_image(zip_path)
+      file_contents = unzip_read(zip_path)
+      extract_basename = File.basename(zip_path, ".*") + ".jpg"
+      extract_path = File.join(@output_dir, @image_subdir_filesystem, extract_basename)
+      
+      fm = FileMagic.new
+      filetype = fm.buffer(file_contents)
+      case filetype
+        when /^JPEG image data/, /^PNG image data/
+          img = Magick::Image.from_blob(file_contents)[0]
+          if img.columns > 800 || img.rows > 800
+            img.resize_to_fit!(800)
+          end
+          ret = img.write(extract_path) {
+            self.format = "JPEG"
+            self.quality = 80
+          }
+      end
+      if @image_subdir_kramdown.empty?
+        kramdown_path = extract_basename
+      else
+        kramdown_path = File.join(@image_subdir_kramdown, extract_basename)
+      end
+      return kramdown_path
     end
 
     def parse_relationships(relationships)
@@ -103,16 +111,6 @@ module DocxConverter
       end
       return output
     end
-
-
-    def compose_footnote_definitions
-      output = ""
-      @footnotes_hash.each do |k,v|
-        output += "[^#{ k }]: #{ v }\n\n"
-      end
-      return output
-    end
-
 
     def parse_content(node,depth)
       output = ""
@@ -145,11 +143,13 @@ module DocxConverter
           # This is a reference to one of Word's paragraph-level styles
           case nd["w:val"]
             when "Title"
-              add = "{: .class = 'title' }\n# "
+              add = "{: .class = 'title' }\n"
             when "Heading1"
               add = "# "
             when "Heading2"
               add = "## "
+            when "Quote"
+              add = "> "
           end
             
         when "r"
@@ -221,27 +221,19 @@ module DocxConverter
           image_id = image_node.attributes["embed"].value
           image_path_zip = File.join("word", @relationships_hash[image_id])
           
-          image_extract_path_filesystem = File.join(@image_subdir_filesystem, File.basename(image_path_zip))
-          image_extract_path_kramdown = File.join(@image_subdir_filesystem, File.basename(image_path_zip))
-          image_extract_name_kramdown = File.basename(image_path_zip)
-            
-          add = "![]{#{ image_extract_name_kramdown }}\n"
+          extracted_imagename = extract_image(image_path_zip)
           
-          unzip_extract(image_path_zip, image_extract_path_filesystem)
-          
-        when "proofErr", "rPr"
-          # ignore those nodes, they don't have a correspondence in kramdown.
+          add = "![](#{ extracted_imagename })\n"
         else
-          puts ' ' * depth + "ELSE: #{ nd.name }"
+          # ignore those nodes
+          # puts ' ' * depth + "ELSE: #{ nd.name }"
         end
         
         output += add
         i += 1
       end
 
-      #puts "#{ nd.name }: #{ text.inspect }\n-----\n"
       depth -= 1
-      
       return output
     end
     

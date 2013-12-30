@@ -1,4 +1,4 @@
-# docx_converter -- Converts docx files into html or LaTeX via the kramdown syntax
+# docx_converter -- Converts Word docx files into html or LaTeX via the kramdown syntax
 # Copyright (C) 2013 Red (E) Tools Ltd. (www.thebigrede.net)
 # 
 # This program is free software: you can redistribute it and/or modify
@@ -19,6 +19,8 @@ require 'publishr'
 require 'kramdown'
 require 'nokogiri'
 require 'zip/zipfilesystem'
+require 'filemagic'
+require 'RMagick'
 
 dir = File.dirname(__FILE__)
 Dir[File.expand_path("#{dir}/docx_converter/*.rb")].uniq.each do |file|

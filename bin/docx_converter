@@ -22,43 +22,30 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'docx_converter'
 
 if ARGV[2].nil?
-  puts 'Error: Arguments missing!'
-  puts ''
-  puts 'docx_converter  -- '
-  puts 'Converts docx files into html or LaTeX via the kramdown syntax'
-  puts ''
-  puts 'Copyright (C) 2013 Red (E) Tools Ltd. (www.thebigrede.net)'
-  puts ''
-  puts 'See https://github.com/michaelfranzl for usage.'
-  puts ''
-  puts 'This program is free software: you can redistribute it and/or modify'
-  puts 'it under the terms of the GNU Affero General Public License as'
-  puts 'published by the Free Software Foundation, either version 3 of the'
-  puts 'License, or (at your option) any later version.'
-  puts ''
-  puts ''
-  Process.exit
+  puts 'Error: Arguments missing! See https://github.com/michaelfranzl /docx_converter or README.md for documentation.'
+  Process.exit!
 end
 
-docx_file = ARGV[0]
-output_format = ARGV[1]
-output_dir = ARGV[2]
-
-parse_options = {
+options = {
+  :inputfile => ARGV[0],
   :image_subdir_filesystem => "images",
-  :image_subdir_kramdown => ""
+  :image_subdir_kramdown => "images",
+  :output_dir => File.join(ARGV[2], "src"),
+  :language => "en",
+  :split_chapters => true
 }
 
-output_kramdown = DocxConverter::Parser.new(docx_file, output_dir, parse_options).parse
+output_format = ARGV[1].to_sym
 
+supported_output_formats = [:kramdown, :html, :latex]
+unless supported_output_formats.include? output_format
+  puts "Output format must be one of #{ supported_output_formats.join(", ") }. Exiting."
+  Process.exit!
+end
 
-case output_format
-  when 'kramdown'
-    File.write(File.join(output_dir, "01.chapter01.en.page"), output_kramdown)
-  when 'html'
-    puts 'html'
-  when 'latex'
-    puts 'latex'
-  else
-    puts "Invalid format #{ format }."
+r = DocxConverter::Render.new(options)
+rendered_filepaths = r.render(output_format)
+
+if rendered_filepaths.any?
+  puts "Rendered files #{ rendered_filepaths.join(", ") } in directory #{ File.join(ARGV[2], "src") }"
 end

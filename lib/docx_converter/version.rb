@@ -1,4 +1,4 @@
-# docx_converter -- Converts docx files into html or LaTeX via the kramdown syntax
+# docx_converter -- Converts Word docx files into html or LaTeX via the kramdown syntax
 # Copyright (C) 2013 Red (E) Tools Ltd. (www.thebigrede.net)
 # 
 # This program is free software: you can redistribute it and/or modify
@@ -16,5 +16,5 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module DocxConverter
-  VERSION = "0.0.1"
+  VERSION = "1.0.0"
 end
