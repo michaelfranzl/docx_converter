@@ -28,7 +28,15 @@ Supported Word elements:
 Installation
 ----------
 
+On Debian Linux:
+
+`apt-get install libmagic-dev`
+`apt-get install libmagickwand-dev`
 `gem install docx-converter`
+
+Look into the .gemspec file to see all gem dependencies.
+
+Installation may vary on other operating systems.
 
 Usage
 ----------
