@@ -170,7 +170,7 @@ module DocxConverter
               prefix = postfix = "*"
             when "smallCaps"
               # This is regular (non-style) italic
-              prefix = "name("
+              prefix = " name("
               postfix = ")"
             when "rStyle"
               # This is a reference to one of Word's style names
