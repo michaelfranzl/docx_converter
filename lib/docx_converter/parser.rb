@@ -168,6 +168,10 @@ module DocxConverter
             when "i"
               # This is regular (non-style) italic
               prefix = postfix = "*"
+            when "smallCaps"
+              # This is regular (non-style) italic
+              prefix = "name("
+              postfix = ")"
             when "rStyle"
               # This is a reference to one of Word's style names
               case format_node.attributes["val"].value
@@ -176,6 +180,11 @@ module DocxConverter
                 # This node is missing the xml:space="preserve" attribute, so we need to set the spaces ourselves.
                 prefix = " **"
                 postfix = "** "
+              when /Emph.*/
+                # "Emph..." is a predefined Word style. In English Word it's 'Emphasis', in French it's 'Emphaseitaliques'
+                # This node is missing the xml:space="preserve" attribute, so we need to set the spaces ourselves.
+                prefix = " *"
+                postfix = "* "
               end
             end
             add = prefix + parse_content(nd,depth) + postfix
