@@ -172,6 +172,7 @@ module DocxConverter
               # This is regular (non-style) italic
               prefix = " name("
               postfix = ")"
+              
             when "rStyle"
               # This is a reference to one of Word's style names
               case format_node.attributes["val"].value
