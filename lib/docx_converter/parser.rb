@@ -110,7 +110,7 @@ module DocxConverter
             # Word outputs -1 and 0 as 'magic' footnotes
             next
           end
-            output[footnote_number] = parse_content(fnode,0).strip
+          output[footnote_number] = parse_content(fnode,0).strip
         end
       end
       return output
