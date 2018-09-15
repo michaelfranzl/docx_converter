@@ -9,8 +9,6 @@ A `.docx` file as written by modern versions of Microsoft Office is just a `.zip
 
 Output files and directories will be created according to the `webgen` conventions. This is useful when you want to generate a static website with the `webgen` gem after you have converted your `.docx` file into `html`. The file naming is in the format `ss.nnnn.ll.page`, where `ss` is a 2-digit sort number, `nnnn` is the main file name, `ll` is the language code. For more information on `webgen` see http://webgen.gettalong.org/
 
-`docx_converter` was written for our project `publishr_web`, see http://documentation.red-e.eu/publishr/index.html
-
 Supported Word elements:
 
 * Paragraph
