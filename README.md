@@ -30,7 +30,7 @@ On Debian Linux:
 
 `apt-get install libmagic-dev`
 `apt-get install libmagickwand-dev`
-`gem 'docx_converter'`
+`gem install docx_converter`
 
 Look into the .gemspec file to see all gem dependencies.
 
