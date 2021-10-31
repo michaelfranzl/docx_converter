@@ -56,8 +56,10 @@ module DocxConverter
     def unzip_read(zip_path)
       file = @zipfile.find_entry(zip_path)
       contents = ""
-      file.get_input_stream do |f|
-        contents = f.read
+      unless file.nil?
+        file.get_input_stream do |f|
+            contents = f.read
+        end
       end
       return contents
     end
@@ -101,13 +103,15 @@ module DocxConverter
     
     def parse_footnotes(node)
       output = {}
-      node.xpath("//w:footnote").each do |fnode|
-        footnote_number = fnode.attributes["id"].value
-        if ["-1", "0"].include?(footnote_number)
-          # Word outputs -1 and 0 as 'magic' footnotes
-          next
+      unless node.instance_variable_get(:@node_cache).empty?
+        node.xpath("//w:footnote").each do |fnode|
+          footnote_number = fnode.attributes["id"].value
+          if ["-1", "0"].include?(footnote_number)
+            # Word outputs -1 and 0 as 'magic' footnotes
+            next
+          end
+          output[footnote_number] = parse_content(fnode,0).strip
         end
-        output[footnote_number] = parse_content(fnode,0).strip
       end
       return output
     end
